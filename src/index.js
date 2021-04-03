@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { render } from 'react-dom';
 import { HashRouter, Route, Link } from 'react-router-dom';
+import Facet from './Facet';
 
-//TODO - Filter passed a map and an onChange.
 
 const App = (props)=> {
   const [products, setProducts] = useState([]);
@@ -23,14 +23,11 @@ const App = (props)=> {
     props.history.push(`${JSON.stringify(_filter)}`);
   };
 
-  useEffect(()=> {
-    setProducts([
-      { id: 1, name: 'Foo', shape: 'circle', color: 'red' }, 
-      { id: 2, name: 'Bar', shape: 'square', color: 'blue' },
-      { id: 3, name: 'Bazz', shape: 'circle', color: 'blue' },
-      { id: 4, name: 'Qug', shape: 'circle', color: 'red' },
-      { id: 5, name: 'Scrib', shape: 'diamond', color: 'red' },
-    ])
+  useEffect(async()=> {
+    const response = await fetch('/api/products');
+    const products = await response.json();
+    setProducts(products);
+
   }, []);
 
   const shapeMap = products.filter( product => filter.color === '' || filter.color === product.color ).reduce((acc, product)=> {
@@ -45,25 +42,16 @@ const App = (props)=> {
     return acc;
   }, {});
 
+  console.log(colorMap);
+
 
   return (
     <div>
       <section>
         <a href='#'>All</a>
         <h2>Filters</h2>
-        <div>
-          <h3>Color</h3>
-          <label>All <input checked={ filter.color === '' } onChange={ navigate } type='checkbox' name='color' value=''/></label>
-          <label>Blue ({ colorMap.blue || 0 })<input checked={ filter.color === 'blue' } onChange={ navigate } type='checkbox' name='color' value='blue' disabled={ !colorMap.blue } /></label>
-          <label>Red ({ colorMap.red || 0 })<input checked={ filter.color === 'red' } onChange={ navigate } type='checkbox' name='color' value='red' disabled={ !colorMap.red }/></label>
-        </div>
-        <div>
-          <h3>Shape</h3>
-          <label>All <input checked={ filter.shape === '' } onChange={ navigate } type='checkbox' name='shape' value=''/></label>
-          <label>Square ({ shapeMap.square || 0 })<input checked={ filter.shape === 'square' } onChange={ navigate } type='checkbox' name='shape' value='square' disabled={ !shapeMap.square }/></label>
-          <label>Circle ({ shapeMap.circle || 0 })<input checked={ filter.shape === 'circle' } onChange={ navigate } type='checkbox' name='shape' value='circle' disabled={ !shapeMap.circle }/></label>
-          <label>Diamond ({ shapeMap.diamond || 0 })<input checked={ filter.shape === 'diamond' } onChange={ navigate } type='checkbox' name='shape' value='diamond' disabled={ !shapeMap.diamond }/></label>
-        </div>
+        <Facet map={ colorMap } name='color' navigate={ navigate } filter={ filter }/>
+        <Facet map={ shapeMap } name='shape' navigate={ navigate } filter={ filter }/>
       </section>
       <section>
         <h2>Products</h2>
